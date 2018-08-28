@@ -1,12 +1,13 @@
+const cors = require('cors');
 const express = require('express');
 const fs = require('fs');
 const id3 = require('node-id3');
-const path = require('path');
 const Client = require('pg').Client;
 
 const server = express();
 const client = new Client({ database: 'media' });
 client.connect();
+server.use(cors());
 
 function omit(obj, key) {
   const keys = Object.keys(obj);
@@ -23,11 +24,19 @@ function getById(id) {
 function getSong(req, res, next) {
   getById(req.query.id)
     .then(song => {
+      if (!song) return res.status(404).json({ error: 'Not Found' });
       req.song = song;
       next();
     })
-    .catch(err => res.status(404));
+    .catch(err => res.status(500).end());
 }
+
+server.use('/static', express.static('client/build'));
+server.use('/assets', express.static('assets'));
+
+server.get('/', (req, res) => {
+  res.sendFile(__dirname + '/index.html');
+});
 
 server.get('/details', getSong, (req, res) => {
   res.json(omit(req.song, 'path'));
@@ -55,4 +64,4 @@ server.get('/random', (req, res) => {
     .catch(err => res.status(500));
 });
 
-server.listen(8000, () => console.log(`SERVER LISTENING`));
+server.listen(3000, () => console.log(`SERVER LISTENING`));
