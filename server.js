@@ -1,13 +1,14 @@
+const Client = require('pg').Client;
 const cors = require('cors');
 const express = require('express');
 const fs = require('fs');
 const id3 = require('node-id3');
-const Client = require('pg').Client;
 
 const server = express();
+server.use(cors());
+
 const client = new Client({ database: 'media' });
 client.connect();
-server.use(cors());
 
 function omit(obj, key) {
   const keys = Object.keys(obj);
@@ -64,4 +65,4 @@ server.get('/random', (req, res) => {
     .catch(err => res.status(500));
 });
 
-server.listen(3000, () => console.log(`SERVER LISTENING`));
+server.listen(8000, () => console.log(`SERVER LISTENING`));

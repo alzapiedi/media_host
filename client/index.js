@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom';
 
 import Player from './Player.js';
 
+const HOST_URL = 'http://108.4.212.129:8000';
+
 class App extends React.Component {
   state = {}
 
@@ -20,22 +22,42 @@ class App extends React.Component {
   }
 
   render() {
-    return <Player src={this.state.src} />
+    return (
+      <div>
+        <Player song={this.state.song} src={this.state.src} onEnded={this.nextSong} />
+        <button onClick={this.nextSong}>Next</button>
+      </div>
+    );
   }
 
   changeSong = id => {
-    return fetch('http://localhost:3000/song?id='+id)
-      .then(res => {
-        return res.blob();
-      })
-      .then(blob => {
-        const src = URL.createObjectURL(blob);
-        this.setState({ src });
-      })
+    return this.getSongDetails(id)
+      .then(song => this.setState({ song }))
+      .then(() => this.getSongStreamSrc(id))
+      .then(src => this.setState({ src }))
       .catch(err => console.log(err.message));
   }
-}
 
+  getRandomSong = () => {
+    return fetch(`${HOST_URL}/random`)
+      .then(res => res.json())
+      .catch(err => console.log(err.message));
+  }
+
+  getSongDetails = id => {
+    return fetch(`${HOST_URL}/details?id=${id}`).then(res => res.json());
+  }
+
+  getSongStreamSrc = id => {
+    return fetch(`${HOST_URL}/song?id=${id}`)
+      .then(res => res.blob())
+      .then(blob => URL.createObjectURL(blob));
+  }
+
+  nextSong = () => {
+    return this.getRandomSong().then(song => this.changeSong(song.id));
+  }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   ReactDOM.render(<App />, document.getElementById('root'));

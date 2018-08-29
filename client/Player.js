@@ -9,20 +9,47 @@ export default class Player extends Component {
   }
 
   render() {
-    return <video controls poster={this.state.isPlaying ? POSTER_PLAY : POSTER_PAUSED} ref={node => this.player = node}><source src={this.props.src} type="audio/mpeg"></source></video>;
+    return (
+      <div className="player-container">
+        {this.renderOverlay()}
+        <video controls poster={this.state.isPlaying ? POSTER_PLAY : POSTER_PAUSED} ref={node => this.player = node}><source src={this.props.src} type="audio/mpeg"></source></video>;
+      </div>
+    );
   }
 
-  setPlaying = () => {
+  renderOverlay() {
+    if (!this.props.song || !this.props.src) return;
+    return (
+      <div className="player-overlay">
+        <h2>{this.props.song.artist}</h2>
+        <h3>{this.props.song.title}</h3>
+      </div>
+    );
+  }
+
+  onPlaying = () => {
     this.setState({ isPlaying: true });
   }
 
-  setPaused = () => {
+  onPaused = () => {
     this.setState({ isPlaying: false });
   }
 
+  onEnded = () => {
+    this.setState({ isPlaying: false });
+    this.props.onEnded();
+  }
+
+  onLoaded = () => {
+    this.setState({ isPlaying: true });
+    this.player.play();
+  }
+
   componentDidMount() {
-    this.player.addEventListener('play', this.setPlaying);
-    this.player.addEventListener('pause', this.setPaused);
+    this.player.addEventListener('ended', this.onEnded);
+    this.player.addEventListener('loadeddata', this.onLoaded);
+    this.player.addEventListener('play', this.onPlaying);
+    this.player.addEventListener('pause', this.onPaused);
   }
 
   componentWillReceiveProps() {
@@ -30,7 +57,9 @@ export default class Player extends Component {
   }
 
   componentWillUnmount() {
-    this.player.removeEventListener('play', this.setPlaying);
-    this.player.removeEventListener('pause', this.setPaused);
+    this.player.removeEventListener('ended', this.onEnded);
+    this.player.removeEventListener('loadeddata', this.onLoaded);
+    this.player.removeEventListener('play', this.onPlaying);
+    this.player.removeEventListener('pause', this.onPaused);
   }
 }

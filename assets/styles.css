@@ -1,0 +1,8 @@
+.player-container {
+  position: relative;
+}
+
+.player-overlay {
+  position: absolute;
+  top: 10px;
+}
