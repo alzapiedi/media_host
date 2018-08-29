@@ -10,11 +10,13 @@ module.exports = {
     ]
   },
   resolve: {
-    extensions: ['*', '.js', '.jsx']
+    extensions: ['*', '.js', '.jsx'],
+    modules: [__dirname, 'node_modules']
   },
   output: {
     path: __dirname + '/build',
     filename: 'app.js'
   },
-  devtool: 'source-map'
+  devtool: 'source-map',
+  mode: 'development'
 };

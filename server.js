@@ -4,6 +4,8 @@ const express = require('express');
 const fs = require('fs');
 const id3 = require('node-id3');
 
+const HOST_URL = 'http://localhost:3000';
+
 const server = express();
 server.use(cors());
 
@@ -22,6 +24,10 @@ function getById(id) {
   return client.query('select * from songs where id = $1', [id]).then(res => res.rows[0]);
 }
 
+function getSongs() {
+  return client.query('select * from songs').then(res => res.rows);
+}
+
 function getSong(req, res, next) {
   getById(req.query.id)
     .then(song => {
@@ -36,7 +42,10 @@ server.use('/static', express.static('client/build'));
 server.use('/assets', express.static('assets'));
 
 server.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
+  fs.readFile(__dirname + '/index.html', (err, template) => {
+    const htmlDoc = template.toString().replace('%HOST_URL%', HOST_URL);
+    res.send(htmlDoc);
+  });
 });
 
 server.get('/details', getSong, (req, res) => {
@@ -55,6 +64,10 @@ server.get('/song', getSong, (req, res) => {
   return fs.createReadStream(song.path).pipe(res);
 });
 
+server.get('/songs', (req, res) => {
+  getSongs().then(songs => res.json({ songs })).catch(err => res.status(500).end());
+});
+
 server.get('/random', (req, res) => {
   const i = Math.round(Math.random() * 11200);
 
@@ -62,7 +75,7 @@ server.get('/random', (req, res) => {
     .then(song => {
       return res.json(omit(song, 'path'));
     })
-    .catch(err => res.status(500));
+    .catch(err => res.status(500).end());
 });
 
-server.listen(8000, () => console.log(`SERVER LISTENING`));
+server.listen(3000, () => console.log(`SERVER LISTENING`));

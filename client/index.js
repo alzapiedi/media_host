@@ -1,61 +1,41 @@
-import React from 'react';
+import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 
-import Player from './Player.js';
+import Library from 'Library';
+import Player from 'Player';
+import utils from 'utils';
 
-const HOST_URL = 'http://108.4.212.129:8000';
-
-class App extends React.Component {
-  state = {}
+class App extends Component {
+  state = { songs: [] }
 
   componentDidMount() {
-    const q = window.location.search.split('?')[1];
-    if (q) {
-      const params = q.split('&').reduce((acc, el) => {
-        const s = el.split('=');
-        const [k, v] = [s[0], s[1]];
-        acc[k] = v;
-        return acc;
-      }, {});
-      if (params.id) this.changeSong(params.id);
-    }
+    utils.api.getAllSongs().then(songs => this.setState({ songs, ready: true }));
+
+    const params = utils.browser.getQueryParams();
+    if (params.id) this.changeSong(params.id);
   }
 
   render() {
+    if (!this.state.ready) return null;
     return (
-      <div>
+      <div className="container">
+        <Library songs={this.state.songs} onSelectSong={this.changeSong} />
         <Player song={this.state.song} src={this.state.src} onEnded={this.nextSong} />
-        <button onClick={this.nextSong}>Next</button>
       </div>
     );
   }
 
   changeSong = id => {
-    return this.getSongDetails(id)
+    return utils.api.getSongDetails(id)
       .then(song => this.setState({ song }))
-      .then(() => this.getSongStreamSrc(id))
+      .then(() => utils.api.getSongStream(id))
+      .then(stream => URL.createObjectURL(stream))
       .then(src => this.setState({ src }))
       .catch(err => console.log(err.message));
   }
 
-  getRandomSong = () => {
-    return fetch(`${HOST_URL}/random`)
-      .then(res => res.json())
-      .catch(err => console.log(err.message));
-  }
-
-  getSongDetails = id => {
-    return fetch(`${HOST_URL}/details?id=${id}`).then(res => res.json());
-  }
-
-  getSongStreamSrc = id => {
-    return fetch(`${HOST_URL}/song?id=${id}`)
-      .then(res => res.blob())
-      .then(blob => URL.createObjectURL(blob));
-  }
-
   nextSong = () => {
-    return this.getRandomSong().then(song => this.changeSong(song.id));
+    return utils.api.getRandomSong().then(song => this.changeSong(song.id));
   }
 }
 

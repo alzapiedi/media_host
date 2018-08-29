@@ -12,7 +12,7 @@ export default class Player extends Component {
     return (
       <div className="player-container">
         {this.renderOverlay()}
-        <video controls poster={this.state.isPlaying ? POSTER_PLAY : POSTER_PAUSED} ref={node => this.player = node}><source src={this.props.src} type="audio/mpeg"></source></video>;
+        <video key="video" controls poster={this.state.isPlaying ? POSTER_PLAY : POSTER_PAUSED} ref={node => this.player = node}><source src={this.props.src} type="audio/mpeg"></source></video>
       </div>
     );
   }
@@ -46,10 +46,7 @@ export default class Player extends Component {
   }
 
   componentDidMount() {
-    this.player.addEventListener('ended', this.onEnded);
-    this.player.addEventListener('loadeddata', this.onLoaded);
-    this.player.addEventListener('play', this.onPlaying);
-    this.player.addEventListener('pause', this.onPaused);
+    this.addEventListeners();
   }
 
   componentWillReceiveProps() {
@@ -57,9 +54,28 @@ export default class Player extends Component {
   }
 
   componentWillUnmount() {
+    this.removeEventListeners();
+  }
+
+  addEventListeners() {
+    this.player.addEventListener('ended', this.onEnded);
+    this.player.addEventListener('loadeddata', this.onLoaded);
+    this.player.addEventListener('play', this.onPlaying);
+    this.player.addEventListener('pause', this.onPaused);
+  }
+
+  removeEventListeners() {
     this.player.removeEventListener('ended', this.onEnded);
     this.player.removeEventListener('loadeddata', this.onLoaded);
     this.player.removeEventListener('play', this.onPlaying);
     this.player.removeEventListener('pause', this.onPaused);
+  }
+
+  stop() {
+    this.player.pause();
+  }
+
+  play() {
+    this.player.play();
   }
 }
