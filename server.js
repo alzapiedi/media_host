@@ -1,10 +1,11 @@
+const bodyParser = require('body-parser');
 const Client = require('pg').Client;
 const cors = require('cors');
 const express = require('express');
 const fs = require('fs');
 const id3 = require('node-id3');
 
-const HOST_URL = 'http://localhost:3000';
+const HOST_URL = 'http://108.4.212.129:8000';
 
 const server = express();
 server.use(cors());
@@ -48,6 +49,18 @@ server.get('/', (req, res) => {
   });
 });
 
+server.get('/remote', (req, res) => {
+  fs.readFile(__dirname + '/remote_index.html', (err, template) => {
+    const htmlDoc = template.toString().replace('%HOST_URL%', HOST_URL);
+    res.send(htmlDoc);
+  });
+});
+
+server.post('/remote', bodyParser.text({ type: 'text/plain', limit: '16mb' }), (req, res) => {
+  fs.writeFileSync(__dirname + '/client/build/app2.js', req.body);
+  res.end();
+});
+
 server.get('/details', getSong, (req, res) => {
   res.json(omit(req.song, 'path'));
 });
@@ -78,4 +91,4 @@ server.get('/random', (req, res) => {
     .catch(err => res.status(500).end());
 });
 
-server.listen(3000, () => console.log(`SERVER LISTENING`));
+server.listen(8000, () => console.log(`SERVER LISTENING`));
