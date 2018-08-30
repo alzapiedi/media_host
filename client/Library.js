@@ -7,12 +7,12 @@ const VIEWS = {
 }
 
 export default class Library extends Component {
-  state = { view: VIEWS.artists, viewStack: [VIEWS.main, VIEWS.artists] };
+  state = { view: VIEWS.artists, viewStack: [VIEWS.main, VIEWS.artists], containerScrollTop: {} };
 
   render() {
     const view = this.getView();
     return (
-      <div className="library">
+      <div className="library" ref={node => this.container = node}>
         <header className="library-header">
           {this.renderBackButton()}
           <h2>{this.getHeader()}</h2>
@@ -39,7 +39,7 @@ export default class Library extends Component {
   }
 
   renderBackButton() {
-    if (this.state.viewStack.length < 2) return;
+    if (this.state.viewStack.length < 2) return null;
     return <button className="back-button" onClick={this.goBack} />;
   }
 
@@ -68,13 +68,18 @@ export default class Library extends Component {
   }
 
   changeView(view) {
-    this.setState({ view, viewStack: this.state.viewStack.concat(view) });
+    const containerScrollTop = { ...this.state.containerScrollTop, [this.state.view]: this.container.scrollTop };
+    this.setState({ view, viewStack: this.state.viewStack.concat(view), containerScrollTop }, () => this.container.scrollTop = this.state.containerScrollTop[view] || 0);
   }
 
   goBack = () => {
     const l = this.state.viewStack.length;
+    const nextView = this.state.viewStack[l - 2];
+    const containerScrollTop = { ...this.state.containerScrollTop, [this.state.view]: this.container.scrollTop }
 
-    this.setState({ view: this.state.viewStack[l-2], viewStack: this.state.viewStack.slice(0, l - 1) });
+    this.setState({ view: this.state.viewStack[l-2], viewStack: this.state.viewStack.slice(0, l - 1), containerScrollTop }, () => {
+      this.container.scrollTop = this.state.containerScrollTop[nextView] || 0;
+    });
   }
 
   selectArtist(selectedArtist) {
@@ -87,7 +92,9 @@ export default class Library extends Component {
 
   getArtists() {
     if (this.artists) return this.artists;
-    const artists = Array.from(new Set(this.props.songs.map(song => song.artist)));
+    let artists = this.props.songs.filter(song => song.artist && song.artist.length > 0).map(song => song.artist.trim());
+    artists = Array.from(new Set(artists));
+    artists = artists.sort((a,b) => a.toLowerCase().trim().localeCompare(b.toLowerCase().trim()))
     return this.artists = artists;
   }
 }

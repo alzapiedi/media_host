@@ -12,18 +12,30 @@ export default class Player extends Component {
     return (
       <div className="player-container">
         {this.renderOverlay()}
-        <video key="video" controls poster={this.state.isPlaying ? POSTER_PLAY : POSTER_PAUSED} ref={node => this.player = node}><source src={this.props.src} type="audio/mpeg"></source></video>
+        {this.renderMediaPlayer()}
       </div>
     );
   }
 
   renderOverlay() {
-    if (!this.props.song || !this.props.src) return;
+    if (!this.props.song) return null;
     return (
       <div className="player-overlay">
         <h2>{this.props.song.artist}</h2>
         <h3>{this.props.song.title}</h3>
       </div>
+    );
+  }
+
+  renderMediaPlayer() {
+    return (
+      <video
+        key="video"
+        controls={!!this.props.src}
+        poster={this.state.isPlaying ? POSTER_PLAY : POSTER_PAUSED}
+        ref={node => this.player = node}>
+          <source src={this.props.src} type="audio/mpeg" />
+      </video>
     );
   }
 
@@ -49,8 +61,8 @@ export default class Player extends Component {
     this.addEventListeners();
   }
 
-  componentWillReceiveProps() {
-    this.player && this.player.load();
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.src && nextProps.src !== this.props.src) this.player && this.player.load();
   }
 
   componentWillUnmount() {

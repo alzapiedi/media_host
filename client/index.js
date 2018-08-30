@@ -35,7 +35,10 @@ class App extends Component {
   }
 
   nextSong = () => {
-    return utils.api.getRandomSong().then(song => this.changeSong(song.id));
+    if (!this.state.song) return;
+    const songs = this.state.songs.filter(song => song.artist === this.state.song.artist);
+    const currentIdx = songs.findIndex(song => song.id === this.state.song.id);
+    this.changeSong(songs[currentIdx + 1].id);
   }
 }
 
