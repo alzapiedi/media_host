@@ -35,7 +35,23 @@ export default class Library extends Component {
 
   renderSongs() {
     const songs = this.props.songs.filter(song => song.artist === this.state.selectedArtist);
-    return songs.map(song => <button key={song.id} className="nav-button" onClick={this.selectSong.bind(this, song)}>{song.title}</button>);
+    const albumMap = songs.reduce((map, song) => {
+      if (!song.album) map['Unknown Album'] = map['Unknown Artist'] ? map['Unknown Album'].concat(song) : [song];
+      map[song.album] = map[song.album] ? map[song.album].concat(song) : [song];
+      return map;
+    }, {});
+
+    return Object.keys(albumMap).map(album => this.renderAlbum(album, albumMap[album]));
+  }
+
+  renderAlbum(albumTitle, songs) {
+    songs.sort((a, b) => a.trackNumber > b.trackNumber);
+    return (
+      <div>
+        <div className="library-album-title">{albumTitle}</div>
+        {songs.map(song => <button key={song.id} className="nav-button" onClick={this.selectSong.bind(this, song)}>{song.title}</button>)}
+      </div>
+    );
   }
 
   renderBackButton() {

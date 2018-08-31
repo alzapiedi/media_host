@@ -18,9 +18,10 @@ function scan(dir) {
 }
 
 function getSongData(_path) {
+  if (id % 500 === 0) console.log(`${id} finished`);
   const tags = id3.read(_path);
-  const { title, artist, album, year, genre } = tags;
-  return { id: id++, title, artist, album, year, genre, path: _path };
+  const { title, artist, album, trackNumber, year, genre } = tags;
+  return { id: id++, title, artist, album, trackNumber, year, genre, path: _path };
 }
 
 module.exports = scan;

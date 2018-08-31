@@ -8,14 +8,15 @@ const client = new Client({ database: 'media' });
 const entry = process.argv[2];
 const fileExtensions = /(mp3|wma)$/i;
 
-function addSong({ id, title, artist, album, year, genre, path }) {
+function addSong({ id, title, artist, album, trackNumber, year, genre, path }) {
   return new Promise((resolve, reject) => {
-    const query = `insert into songs values($1, $2, $3, $4, $5, $6, $7)`;
-    client.query(query, [id, title, artist, album, year, genre, path]).then(resolve).catch(reject);
+    const query = `insert into songs values($1, $2, $3, $4, $5, $6, $7, $8)`;
+    client.query(query, [id, title, artist, album, trackNumber, year, genre, path]).then(resolve).catch(reject);
   });
 }
 
 function saveToDB(data) {
+  fs.writeFileSync('appDataBackup', JSON.stringify(data));
   return Promise.all(data.map(addSong));
 }
 
@@ -24,7 +25,7 @@ function dropTable() {
 }
 
 function createTable() {
-  return client.query('CREATE TABLE songs(id integer primary key, title varchar(255), artist varchar(255), album varchar(255), year varchar(10), genre varchar(255), path varchar(255))');
+  return client.query('CREATE TABLE songs(id integer primary key, title varchar(255), artist varchar(255), album varchar(255), trackNumber varchar(40), year varchar(40), genre varchar(255), path varchar(255))');
 }
 
 if (!entry) process.exit(1);

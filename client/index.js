@@ -5,6 +5,8 @@ import Library from 'Library';
 import Player from 'Player';
 import utils from 'utils';
 
+// TODO: sort songs page by album&track#, artist filter text input, playlist of json stringified song data save to localstorage
+
 class App extends Component {
   state = { songs: [] }
 
