@@ -1,9 +1,9 @@
 export default {
   api: {
-    getAllSongs: () => fetch(`${window.HOST_URL}/songs`).then(res => res.json()).then(data => data.songs),
-    getRandomSong: () => fetch(`${window.HOST_URL}/random`).then(res => res.json()),
-    getSongDetails: id => fetch(`${window.HOST_URL}/details?id=${id}`).then(res => res.json()),
-    getSongStream: id => fetch(`${window.HOST_URL}/song?id=${id}`).then(res => res.blob()),
+    getAllSongs: () => fetch(`${window.HOST_URL}/songs`, { credentials: 'include' }).then(res => res.json()).then(data => data.songs),
+    getRandomSong: () => fetch(`${window.HOST_URL}/random`, { credentials: 'include' }).then(res => res.json()),
+    getSongDetails: id => fetch(`${window.HOST_URL}/details?id=${id}`, { credentials: 'include' }).then(res => res.json()),
+    getSongStream: id => fetch(`${window.HOST_URL}/song?id=${id}`, { credentials: 'include' }).then(res => res.blob()),
   },
   browser: {
     getQueryParams: () => {

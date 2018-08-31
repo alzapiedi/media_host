@@ -65,8 +65,7 @@ server.get('/', forceLogin, (req, res) => {
 
 server.post('/auth', bodyParser.urlencoded({ extended: true }), (req, res) => {
   if (req.body.password === process.env.PASSWORD) {
-    res.cookie('secret', process.env.CLIENT_SECRET);
-    return res.redirect('/');
+    return res.cookie('secret', process.env.CLIENT_SECRET).redirect('/');
   } else {
     res.redirect('/');
   }
