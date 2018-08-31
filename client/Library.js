@@ -15,7 +15,7 @@ export default class Library extends Component {
       <div className="library" ref={node => this.container = node}>
         <header className="library-header">
           {this.renderBackButton()}
-          <h2>{this.getHeader()}</h2>
+          <h2 className="library-heading">{this.getHeading()}</h2>
         </header>
         {view}
       </div>
@@ -36,21 +36,38 @@ export default class Library extends Component {
   renderSongs() {
     const songs = this.props.songs.filter(song => song.artist === this.state.selectedArtist);
     const albumMap = songs.reduce((map, song) => {
-      if (!song.album) map['Unknown Album'] = map['Unknown Artist'] ? map['Unknown Album'].concat(song) : [song];
-      map[song.album] = map[song.album] ? map[song.album].concat(song) : [song];
+      if (!song.album) map['Unknown Album'] = map['Unknown Album'] ? map['Unknown Album'].concat(song) : [song];
+      else map[song.album] = map[song.album] ? map[song.album].concat(song) : [song];
       return map;
     }, {});
 
-    return Object.keys(albumMap).map(album => this.renderAlbum(album, albumMap[album]));
+    return Object.keys(albumMap).sort((a, b) => {
+      if (a === 'Unknown Album') return 1;
+      if (b === 'Unknown Album') return -1;
+      return Number(albumMap[a][0].year) - Number(albumMap[b][0].year)
+    }).map(album => this.renderAlbum(album, albumMap[album]));
   }
 
   renderAlbum(albumTitle, songs) {
-    songs.sort((a, b) => a.trackNumber > b.trackNumber);
+    songs.sort((a, b) => Number(a.tracknumber) - Number(b.tracknumber));
     return (
-      <div>
-        <div className="library-album-title">{albumTitle}</div>
-        {songs.map(song => <button key={song.id} className="nav-button" onClick={this.selectSong.bind(this, song)}>{song.title}</button>)}
+      <div key={albumTitle}>
+        <div className="library-album">
+          <span className="library-album-title">{albumTitle}{songs[0].year ? ` (${songs[0].year})` : null}</span>
+        </div>
+        {songs.map(this.renderSong, this)}
       </div>
+    );
+  }
+
+  renderSong(song) {
+    return (
+      <button
+        key={song.id}
+        className={this.props.selectedSong && song.id === this.props.selectedSong.id ? "nav-button active" : "nav-button"}
+        onClick={this.selectSong.bind(this, song)}>
+          {song.title}
+      </button>
     );
   }
 
@@ -71,7 +88,7 @@ export default class Library extends Component {
     }
   }
 
-  getHeader() {
+  getHeading() {
     const { artists, main, songs } = VIEWS;
     switch(this.state.view) {
       case artists:
@@ -79,7 +96,7 @@ export default class Library extends Component {
       case main:
         return 'Browse';
       case songs:
-        return 'Songs';
+        return this.state.selectedArtist;
     }
   }
 

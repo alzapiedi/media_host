@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 
+const LOADING = '/assets/loading.gif';
 const POSTER_PAUSED = '/assets/player_paused.gif';
 const POSTER_PLAY = '/assets/player_play.gif';
 
@@ -11,6 +12,7 @@ export default class Player extends Component {
   render() {
     return (
       <div className="player-container">
+        {this.state.isLoading ? <img className="player-placeholder" src={POSTER_PAUSED} /> : null}
         {this.renderOverlay()}
         {this.renderMediaPlayer()}
       </div>
@@ -18,7 +20,8 @@ export default class Player extends Component {
   }
 
   renderOverlay() {
-    if (!this.props.song) return null;
+    if (this.props.isFetching) return <img className="player-loading" src={LOADING} />;
+    if (!this.props.song) return;
     return (
       <div className="player-overlay">
         <h2>{this.props.song.artist}</h2>
@@ -34,7 +37,7 @@ export default class Player extends Component {
         controls={!!this.props.src}
         poster={this.state.isPlaying ? POSTER_PLAY : POSTER_PAUSED}
         ref={node => this.player = node}>
-          <source src={this.props.src} type="audio/mpeg" />
+          <source key="source" src={this.props.src} type="audio/mpeg" />
       </video>
     );
   }
@@ -53,8 +56,8 @@ export default class Player extends Component {
   }
 
   onLoaded = () => {
-    this.setState({ isPlaying: true });
-    this.player.play();
+    this.player.style.display = 'block';
+    this.setState({ isLoading: false }, () => this.player.play());
   }
 
   componentDidMount() {
@@ -62,7 +65,10 @@ export default class Player extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.src && nextProps.src !== this.props.src) this.player && this.player.load();
+    if (nextProps.src && nextProps.src !== this.props.src && this.player) this.setState({ isLoading: true }, () => {
+      this.player.style.display = 'none';
+      this.player.load()
+    });
   }
 
   componentWillUnmount() {
@@ -89,5 +95,10 @@ export default class Player extends Component {
 
   play() {
     this.player.play();
+  }
+
+  replay() {
+    this.player.currentTime = 0;
+    this.play();
   }
 }

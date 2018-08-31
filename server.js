@@ -1,5 +1,8 @@
+require('dotenv').config();
+
 const bodyParser = require('body-parser');
 const Client = require('pg').Client;
+const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const express = require('express');
 const fs = require('fs');
@@ -8,6 +11,7 @@ const id3 = require('node-id3');
 const HOST_URL = 'http://108.4.212.129:8000';
 
 const server = express();
+server.use(cookieParser());
 server.use(cors());
 
 const client = new Client({ database: 'media' });
@@ -39,17 +43,36 @@ function getSong(req, res, next) {
     .catch(err => res.status(500).end());
 }
 
+function forceLogin(req, res, next) {
+  if (req.cookies.secret !== process.env.CLIENT_SECRET) return res.sendFile(__dirname + '/login.html');
+  next();
+}
+
+function verifySecret(req, res, next) {
+  if (req.cookies.secret !== process.env.CLIENT_SECRET) return res.status(401).json({ errorStatus: 401 }).end();
+  next();
+}
+
 server.use('/static', express.static('client/build'));
 server.use('/assets', express.static('assets'));
 
-server.get('/', (req, res) => {
+server.get('/', forceLogin, (req, res) => {
   fs.readFile(__dirname + '/index.html', (err, template) => {
     const htmlDoc = template.toString().replace('%HOST_URL%', HOST_URL);
     res.send(htmlDoc);
   });
 });
 
-server.get('/remote', (req, res) => {
+server.post('/auth', bodyParser.urlencoded({ extended: true }), (req, res) => {
+  if (req.body.password === process.env.PASSWORD) {
+    res.cookie('secret', process.env.CLIENT_SECRET);
+    return res.redirect('/');
+  } else {
+    res.redirect('/');
+  }
+});
+
+server.get('/remote', verifySecret, (req, res) => {
   fs.readFile(__dirname + '/remote_index.html', (err, template) => {
     const htmlDoc = template.toString().replace('%HOST_URL%', HOST_URL);
     res.send(htmlDoc);
@@ -61,11 +84,11 @@ server.post('/remote', bodyParser.text({ type: 'text/plain', limit: '16mb' }), (
   res.end();
 });
 
-server.get('/details', getSong, (req, res) => {
+server.get('/details', verifySecret, getSong, (req, res) => {
   res.json(omit(req.song, 'path'));
 });
 
-server.get('/song', getSong, (req, res) => {
+server.get('/song', verifySecret, getSong, (req, res) => {
   const { song } = req;
   res.set('Content-Type', 'audio/mpeg');
 
@@ -77,11 +100,11 @@ server.get('/song', getSong, (req, res) => {
   return fs.createReadStream(song.path).pipe(res);
 });
 
-server.get('/songs', (req, res) => {
+server.get('/songs', verifySecret, (req, res) => {
   getSongs().then(songs => res.json({ songs })).catch(err => res.status(500).end());
 });
 
-server.get('/random', (req, res) => {
+server.get('/random', verifySecret, (req, res) => {
   const i = Math.round(Math.random() * 11200);
 
   getById(i)

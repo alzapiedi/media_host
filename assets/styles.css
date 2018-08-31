@@ -4,7 +4,7 @@
 }
 
 h2 {
-  font-size: 18px;
+  font-size: 16px;
   margin: 0;
 }
 
@@ -21,6 +21,7 @@ button {
 .player-container {
   height: 300px;
   position: relative;
+  width: 400px;
 }
 
 .player-overlay {
@@ -28,6 +29,24 @@ button {
   left: 50%;
   top: 10px;
   transform: translateX(-50%);
+  width: 245px;
+}
+
+.player-loading {
+  height: 75px;
+  left: 50%;
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  width: 75px;
+}
+
+.player-placeholder {
+  height: 300px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 400px;
 }
 
 .container {
@@ -52,9 +71,29 @@ button {
   position: relative;
 }
 
-.library-item-title {
+.library-heading {
+  max-width: 70%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.library-album {
+  align-items: center;
   border-bottom: 1px solid #999;
-  font-size: 13px;
+  color: #777;
+  display: flex;
+  font-size: 12px;
+  font-weight: 600;
+  justify-content: space-between;
+  padding: 2px 2px 2px 5px;
+  text-transform: uppercase;
+}
+
+.library-album-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .back-button {
@@ -74,9 +113,17 @@ button {
   border-bottom: 1px solid #999;
   background-color: inherit;
   font-size: 14px;
-  padding: 10px 5px;
+  overflow: hidden;
+  padding: 10px;
+  text-align: left;
+  text-overflow: ellipsis;
   transition: background 0.15s linear;
+  white-space: nowrap;
   width: 100%;
+}
+
+.nav-button.active {
+  background: #def;
 }
 
 .nav-button:hover {

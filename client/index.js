@@ -5,10 +5,10 @@ import Library from 'Library';
 import Player from 'Player';
 import utils from 'utils';
 
-// TODO: sort songs page by album&track#, artist filter text input, playlist of json stringified song data save to localstorage
+// TODO: artist filter text input, playlist of json stringified song data save to localstorage
 
 class App extends Component {
-  state = { songs: [] }
+  state = { isFetching: false, ready: false, songs: [] }
 
   componentDidMount() {
     utils.api.getAllSongs().then(songs => this.setState({ songs, ready: true }));
@@ -21,18 +21,20 @@ class App extends Component {
     if (!this.state.ready) return null;
     return (
       <div className="container">
-        <Library songs={this.state.songs} onSelectSong={this.changeSong} />
-        <Player song={this.state.song} src={this.state.src} onEnded={this.nextSong} />
+        <Library songs={this.state.songs} selectedSong={this.state.song} onSelectSong={this.changeSong} />
+        <Player ref={node => this.audioPlayer = node} isFetching={this.state.isFetching} song={this.state.song} src={this.state.src} onEnded={this.nextSong} />
       </div>
     );
   }
 
   changeSong = id => {
+    if (this.state.song && id === this.state.song.id) return this.audioPlayer.replay();
+    this.setState({ isFetching: true });
     return utils.api.getSongDetails(id)
       .then(song => this.setState({ song }))
       .then(() => utils.api.getSongStream(id))
       .then(stream => URL.createObjectURL(stream))
-      .then(src => this.setState({ src }))
+      .then(src => this.setState({ src, isFetching: false }))
       .catch(err => console.log(err.message));
   }
 
