@@ -16,6 +16,7 @@ h3 {
 button {
   border: 0;
   cursor: pointer;
+  padding: 0;
 }
 
 .player-container {
@@ -51,7 +52,10 @@ button {
 
 .container {
   border: 1px solid #ccc;
+  border-radius: 4px;
   display: flex;
+  margin: auto;
+  width: 650px;
 }
 
 .library {
@@ -64,14 +68,18 @@ button {
 
 .library-header {
   align-items: center;
+  background: linear-gradient(#eee, #ddd, #eee);
   border-bottom: 1px solid #999;
   display: flex;
   justify-content: center;
-  padding: 5px;
+  padding: 10px 5px;
   position: relative;
+  position: sticky;
+  top: 0;
 }
 
 .library-heading {
+  color: #333;
   max-width: 70%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -96,16 +104,65 @@ button {
   white-space: nowrap;
 }
 
+.library-search-overlay {
+  align-items: center;
+  background: linear-gradient(#eee, #ddd, #eee);
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  left: 250px;
+  padding: 0 8px;
+  position: absolute;
+  top: 0;
+  transition: left 0.3s ease-in;
+  visibility: hidden;
+  width: 100%;
+}
+
+.library-search-input {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  flex: 1;
+  padding: 5px 8px;
+}
+
 .back-button {
   align-items: center;
   background-color: inherit;
   display: flex;
-  left: 0;
+  left: 5px;
   position: absolute;
 }
 
 .back-button::before {
-  content: '\21e6';
+  content: '\2190';
+  font-size: 20px;
+}
+
+.search-button {
+  align-items: center;
+  background-color: inherit;
+  display: flex;
+  position: absolute;
+  right: 5px;
+}
+
+.search-button::before {
+  content: '\1f50d';
+  font-size: 20px;
+}
+
+.cancel-search-button {
+  align-items: center;
+  background-color: inherit;
+  color: #999;
+  display: flex;
+  position: absolute;
+  right: 15px;
+}
+
+.cancel-search-button::before {
+  content: '\00d7';
   font-size: 20px;
 }
 

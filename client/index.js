@@ -5,7 +5,7 @@ import Library from 'Library';
 import Player from 'Player';
 import utils from 'utils';
 
-// TODO: artist filter text input, playlist of json stringified song data save to localstorage
+// TODO: playlist of json stringified song data save to localstorage
 
 class App extends Component {
   state = { isFetching: false, ready: false, songs: [] }
@@ -42,7 +42,7 @@ class App extends Component {
     if (!this.state.song) return;
     const songs = this.state.songs.filter(song => song.artist === this.state.song.artist);
     const currentIdx = songs.findIndex(song => song.id === this.state.song.id);
-    this.changeSong(songs[currentIdx + 1].id);
+    if (songs[currentIdx + 1]) this.changeSong(songs[currentIdx + 1].id);
   }
 }
 

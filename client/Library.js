@@ -7,7 +7,12 @@ const VIEWS = {
 }
 
 export default class Library extends Component {
-  state = { view: VIEWS.artists, viewStack: [VIEWS.main, VIEWS.artists], containerScrollTop: {} };
+  state = {
+    containerScrollTop: {},
+    filter: '',
+    view: VIEWS.artists,
+    viewStack: [VIEWS.main, VIEWS.artists]
+  };
 
   render() {
     const view = this.getView();
@@ -16,8 +21,24 @@ export default class Library extends Component {
         <header className="library-header">
           {this.renderBackButton()}
           <h2 className="library-heading">{this.getHeading()}</h2>
+          {this.renderSearchButton()}
+          {this.renderSearchFilter()}
         </header>
         {view}
+      </div>
+    );
+  }
+
+  renderSearchButton() {
+    if (this.state.view === VIEWS.main) return null;
+    return <button className="search-button" onClick={this.showSearchFilter} />;
+  }
+
+  renderSearchFilter() {
+    return (
+      <div className="library-search-overlay" ref={node => this.searchFilterOverlay = node}>
+        <input className="library-search-input" type="text" placeholder="" onChange={this.updateSearchFilter} value={this.state.filter} />
+        <button className="cancel-search-button" onClick={this.hideSearchFilter} />
       </div>
     );
   }
@@ -34,7 +55,7 @@ export default class Library extends Component {
   }
 
   renderSongs() {
-    const songs = this.props.songs.filter(song => song.artist === this.state.selectedArtist);
+    const songs = this.getSongs();
     const albumMap = songs.reduce((map, song) => {
       if (!song.album) map['Unknown Album'] = map['Unknown Album'] ? map['Unknown Album'].concat(song) : [song];
       else map[song.album] = map[song.album] ? map[song.album].concat(song) : [song];
@@ -76,6 +97,14 @@ export default class Library extends Component {
     return <button className="back-button" onClick={this.goBack} />;
   }
 
+  componentDidMount() {
+    this.searchFilterOverlay.addEventListener('transitionend', this.onTransitionEnd);
+  }
+
+  componentWillUnmount() {
+    this.searchFilterOverlay.removeEventListener('transitionend', this.onTransitionEnd);
+  }
+
   getView() {
     const { artists, main, songs } = VIEWS;
     switch(this.state.view) {
@@ -100,9 +129,43 @@ export default class Library extends Component {
     }
   }
 
+  getArtists() {
+    if (this.artists) return this.artists.filter(artist => artist.toLowerCase().indexOf(this.state.filter.toLowerCase()) > -1);
+    let artists = this.props.songs.filter(song => song.artist && song.artist.length > 0).map(song => song.artist.trim());
+    artists = Array.from(new Set(artists));
+    artists = artists.sort((a,b) => a.toLowerCase().trim().localeCompare(b.toLowerCase().trim()))
+    this.artists = artists;
+    return this.getArtists();
+  }
+
+  getSongs() {
+    return this.props.songs.filter(song => song.artist === this.state.selectedArtist && song.title.toLowerCase().indexOf(this.state.filter.toLowerCase()) > -1);
+  }
+
   changeView(view) {
     const containerScrollTop = { ...this.state.containerScrollTop, [this.state.view]: this.container.scrollTop };
-    this.setState({ view, viewStack: this.state.viewStack.concat(view), containerScrollTop }, () => this.container.scrollTop = this.state.containerScrollTop[view] || 0);
+    this.setState({ filter: '', view, viewStack: this.state.viewStack.concat(view), containerScrollTop }, () => this.container.scrollTop = view !== VIEWS.songs ? this.state.containerScrollTop[view] || 0 : this.container.scrollTop);
+  }
+
+  updateSearchFilter = event => {
+    const filter = event.target.value;
+    this.setState({ filter });
+  }
+
+  showSearchFilter = () => {
+    this.searchFilterOverlay.style.visibility = 'visible';
+    this.searchFilterOverlay.style.left = '0px';
+  }
+
+  hideSearchFilter = () => {
+    this.setState({ filter: '' }, () => {
+      this.searchFilterOverlay.style.left = '250px';
+    });
+  }
+
+  onTransitionEnd = event => {
+    if (event.target.style.left === '250px') event.target.style.visibility = 'hidden';
+    else event.target.children[0].focus();
   }
 
   goBack = () => {
@@ -121,13 +184,5 @@ export default class Library extends Component {
 
   selectSong(song) {
     this.props.onSelectSong(song.id);
-  }
-
-  getArtists() {
-    if (this.artists) return this.artists;
-    let artists = this.props.songs.filter(song => song.artist && song.artist.length > 0).map(song => song.artist.trim());
-    artists = Array.from(new Set(artists));
-    artists = artists.sort((a,b) => a.toLowerCase().trim().localeCompare(b.toLowerCase().trim()))
-    return this.artists = artists;
   }
 }
