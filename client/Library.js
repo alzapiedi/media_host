@@ -139,12 +139,12 @@ export default class Library extends Component {
   }
 
   getSongs() {
-    return this.props.songs.filter(song => song.artist === this.state.selectedArtist && song.title.toLowerCase().indexOf(this.state.filter.toLowerCase()) > -1);
+    return this.props.songs.filter(song => song.artist === this.state.selectedArtist && song.title && song.title.toLowerCase().indexOf(this.state.filter.toLowerCase()) > -1);
   }
 
   changeView(view) {
     const containerScrollTop = { ...this.state.containerScrollTop, [this.state.view]: this.container.scrollTop };
-    this.setState({ filter: '', view, viewStack: this.state.viewStack.concat(view), containerScrollTop }, () => this.container.scrollTop = view !== VIEWS.songs ? this.state.containerScrollTop[view] || 0 : this.container.scrollTop);
+    this.setState({ filter: '', view, viewStack: this.state.viewStack.concat(view), containerScrollTop }, () => this.container.scrollTop = view !== VIEWS.songs ? this.state.containerScrollTop[view] || 0 : 0);
   }
 
   updateSearchFilter = event => {
